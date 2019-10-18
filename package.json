@@ -1,0 +1,87 @@
+{
+  "name": "mock-eatries",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "npm run lint",
+      "git add --force"
+    ],
+    "*.json": [
+      "prettier --write",
+      "git add --force"
+    ]
+  },
+  "scripts": {
+    "test": "export NODE_ENV=test && jest",
+    "test:coverage": "export NODE_ENV=test && jest --coverage",
+    "test:watch": "export NODE_ENV=test && jest --watchAll --verbose --detectOpenHandles ./src",
+    "clean": "rm -rf build && mkdir build",
+    "build-babel": "babel -d ./build ./src/server -s",
+    "build": "npm run clean && npm run build-babel",
+    "heroku-postbuild": "npm run build",
+    "start:dev": "export NODE_ENV=development && nodemon --exec babel-node src/server.js",
+    "lint": "node_modules/eslint/bin/eslint.js src --fix",
+    "prettier": "prettier --write '**/*.{js,jsx}'",
+    "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dbytecoderc/mock-eatries.git"
+  },
+  "author": "DC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dbytecoderc/mock-eatries/issues"
+  },
+  "homepage": "https://github.com/dbytecoderc/mock-eatries#readme",
+  "devDependencies": {
+    "@babel/core": "^7.6.3",
+    "@babel/node": "^7.6.3",
+    "@babel/plugin-transform-regenerator": "^7.4.5",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-eslint": "^10.0.3",
+    "babel-jest": "^24.9.0",
+    "chalk": "^2.4.2",
+    "coveralls": "^3.0.6",
+    "eslint": "^6.5.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.4.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-prettier": "^3.1.1",
+    "husky": "^3.0.8",
+    "jest": "^24.9.0",
+    "lint-staged": "^9.4.2",
+    "mongodb-memory-server": "^5.2.8",
+    "nodemon": "^1.19.3",
+    "prettier": "^1.18.2",
+    "supertest": "^4.0.2"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.6.0",
+    "@babel/preset-env": "^7.6.3",
+    "bcryptjs": "^2.4.3",
+    "connect-redis": "^4.0.3",
+    "cors": "^2.8.5",
+    "cross-env": "^6.0.3",
+    "dotenv": "^8.1.0",
+    "express": "^4.17.1",
+    "express-session": "^1.16.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^3.3.2",
+    "mongoose": "^5.7.3",
+    "morgan": "^1.9.1",
+    "path": "^0.12.7",
+    "redis": "^2.8.0",
+    "uuid": "^3.3.3"
+  }
+}
