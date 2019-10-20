@@ -1,11 +1,8 @@
-//require mongoose module
 import { connect, connection } from 'mongoose';
 import dotenv from 'dotenv';
+import { bold } from 'chalk';
 
 dotenv.config();
-
-//require chalk module to give colors to console text
-import { bold } from 'chalk';
 
 const connected = bold.cyan;
 const error = bold.yellow;
@@ -17,37 +14,40 @@ const dbURL =
     ? process.env.MONGO_URI_TEST
     : process.env.MONGO_URI;
 
-//export this function and imported by server.js
-const dbconnect = () => {
+connection.on('connected', () => {
+  console.log(connected('Mongoose default connection is open to ', dbURL));
+});
+
+connection.on('error', err => {
+  console.log(
+    error('Mongoose default connection has occured ' + err + ' error'),
+  );
+});
+
+connection.on('disconnected', () => {
+  console.log(disconnected('Mongoose default connection is disconnected'));
+});
+
+process.on('SIGINT', () => {
+  connection.close(() => {
+    console.log(
+      termination(
+        'Mongoose default connection is disconnected due to application termination',
+      ),
+    );
+    process.exit(0);
+  });
+});
+
+const dbconnect = () =>
   connect(
     dbURL,
-    { useNewUrlParser: true, useUnifiedTopology: true },
+    {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+    },
   );
-
-  connection.on('connected', () => {
-    console.log(connected('Mongoose default connection is open to ', dbURL));
-  });
-
-  connection.on('error', err => {
-    console.log(
-      error('Mongoose default connection has occured ' + err + ' error'),
-    );
-  });
-
-  connection.on('disconnected', () => {
-    console.log(disconnected('Mongoose default connection is disconnected'));
-  });
-
-  process.on('SIGINT', () => {
-    connection.close(() => {
-      console.log(
-        termination(
-          'Mongoose default connection is disconnected due to application termination',
-        ),
-      );
-      process.exit(0);
-    });
-  });
-};
 
 export default dbconnect;

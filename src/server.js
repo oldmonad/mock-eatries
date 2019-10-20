@@ -3,9 +3,8 @@ import '@babel/polyfill';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-// import passport from 'passport';
-
 import dbconnect from './db/connection';
+import seedUsers from './seeder/users';
 
 import router from './routes';
 
@@ -20,12 +19,6 @@ if (process.env.NODE_ENV === 'development') {
 
 // enable use of dotenv config file.
 dotenv.config();
-
-// app.use(passport.initialize());
-// app.use(passport.session());
-
-// Connect to MongoDB
-process.env.NODE_ENV === 'test' ? null : dbconnect();
 
 app.use(
   express.urlencoded({
@@ -47,6 +40,14 @@ app.all('*', (req, res) =>
 
 const port = process.env.PORT || 5000;
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+dbconnect().then(async () => {
+  await seedUsers();
+
+  if (!module.parent) {
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  }
+});
 
 export default app;
