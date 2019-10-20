@@ -23,10 +23,11 @@
     "test:coverage": "export NODE_ENV=test && jest --coverage",
     "test:watch": "export NODE_ENV=test && jest --watchAll --verbose --detectOpenHandles ./src",
     "clean": "rm -rf build && mkdir build",
-    "build-babel": "babel -d ./build ./src/server -s",
+    "build-babel": "babel -d ./build src -s",
     "build": "npm run clean && npm run build-babel",
     "heroku-postbuild": "npm run build",
-    "start:dev": "export NODE_ENV=development && nodemon --exec babel-node src/server.js",
+    "start": "node build/server.js",
+    "start:dev": "nodemon --exec babel-node src/server.js",
     "lint": "node_modules/eslint/bin/eslint.js src --fix",
     "prettier": "prettier --write '**/*.{js,jsx}'",
     "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
@@ -67,6 +68,7 @@
     "supertest": "^4.0.2"
   },
   "dependencies": {
+    "@babel/cli": "^7.6.4",
     "@babel/polyfill": "^7.6.0",
     "@babel/preset-env": "^7.6.3",
     "bcryptjs": "^2.4.3",
@@ -77,10 +79,12 @@
     "express": "^4.17.1",
     "express-session": "^1.16.2",
     "jsonwebtoken": "^8.5.1",
+    "moment": "^2.24.0",
     "mongodb": "^3.3.2",
     "mongoose": "^5.7.3",
     "morgan": "^1.9.1",
     "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
     "path": "^0.12.7",
     "redis": "^2.8.0",
     "uuid": "^3.3.3"

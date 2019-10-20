@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// const SECRET_KEY = process.env.SECRET_KEY;
+const { SECRET_KEY } = process.env;
 
 /**
  *
@@ -79,7 +79,7 @@ export function comparePassword(hashedPassword, password) {
  * @returns {string} token
  */
 export function generateToken(payload, expiresIn = '30days') {
-  const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn });
+  const token = jwt.sign(payload, SECRET_KEY, { expiresIn });
   return token;
 }
 
@@ -89,7 +89,7 @@ export function generateToken(payload, expiresIn = '30days') {
  * @returns {object/null} decoded tokens
  */
 export const verifyToken = async token => {
-  return jwt.verify(token, process.env.SECRET_KEY, (err, data) => {
+  return jwt.verify(token, SECRET_KEY, (err, data) => {
     if (err) {
       return null;
     }

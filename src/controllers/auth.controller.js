@@ -1,3 +1,4 @@
+import moment from 'moment';
 import User from '../models/user.model';
 import {
   errorResponse,
@@ -70,9 +71,9 @@ export async function login(req, res) {
     return errorResponse(res, 401, 'The email or password is not correct');
   }
 
-  const { _id, admin } = user;
+  const { _id } = user;
 
-  const token = generateToken({ id: _id, email, admin });
+  const token = generateToken({ sub: _id });
 
   const userJSON = user.toJSON();
 
@@ -86,7 +87,12 @@ export async function login(req, res) {
 
   authenticatedUser.token = token;
 
-  client.set(_id.toString(), token, 'EX', 3600);
+  const rateData = {
+    count: 1,
+    startTime: moment().unix(),
+  };
+
+  client.set(_id.toString(), JSON.stringify(rateData), 'EX', 3600);
 
   return successResponse(
     res,
