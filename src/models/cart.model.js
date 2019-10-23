@@ -2,17 +2,13 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 // Create Schema
-const RecipeCategorySchema = new Schema({
+const CartSchema = new Schema({
   createdBy: {
     type: Schema.Types.Mixed,
     ref: 'users',
   },
-  category: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
+  cart: {
+    type: Array,
     required: true,
   },
   date: {
@@ -21,4 +17,4 @@ const RecipeCategorySchema = new Schema({
   },
 });
 
-export default mongoose.model('RecipeCategory', RecipeCategorySchema);
+export default mongoose.model('Cart', CartSchema);
