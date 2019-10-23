@@ -36,6 +36,8 @@ export async function signup(req, res) {
 
   const user = await newUser.save();
   const userJSON = user.toJSON();
+  const { _id } = user;
+  const token = generateToken({ sub: _id });
 
   const creatededUser = excludeProperty(userJSON, [
     'password',
@@ -44,6 +46,14 @@ export async function signup(req, res) {
     'admin',
     'date',
   ]);
+  creatededUser.token = token;
+
+  const rateData = {
+    count: 1,
+    startTime: moment().unix(),
+  };
+
+  client.set(_id.toString(), JSON.stringify(rateData), 'EX', 3600);
 
   return successResponse(
     res,

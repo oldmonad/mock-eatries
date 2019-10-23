@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import Recipe from '../models/recipe.model';
 
 const { SECRET_KEY } = process.env;
 
@@ -124,4 +125,75 @@ export function pick(obj, keys) {
 export function excludeProperty(obj, keys) {
   const filteredKeys = Object.keys(obj).filter(key => !keys.includes(key));
   return pick(obj, filteredKeys);
+}
+
+/**
+ *
+ *
+ * @param {array} recipes
+ * @param {array} keys
+ * @returns {object} filteredArray
+ */
+export async function validateRecipes(recipes) {
+  const validRecipe = [];
+  for (const recipe of recipes) {
+    const existingRecipe = await Recipe.findOne({ _id: recipe });
+
+    if (existingRecipe !== null) {
+      validRecipe.push(recipe.toString());
+    }
+  }
+
+  return validRecipe;
+}
+
+/**
+ *
+ *
+ * @param {array} validRecipes
+ * @param {string}_id
+ * @param {array} cart
+ * @returns {object} filteredObject
+ */
+export async function pruneCart(validRecipes, _id, cart) {
+  validRecipes.forEach(value => {
+    if (!cart.includes(value)) {
+      cart.push(value);
+    }
+  });
+  return cart;
+}
+
+/**
+ *
+ *
+ * @param {object} model
+ * @param {array} inputData
+ * @returns {object} filteredObject
+ */
+export async function extractModelData(model, inputData) {
+  const responseData = [];
+  if (typeof inputData === 'string') {
+    const modelData = await model.findOne({ _id: inputData });
+    if (modelData !== null) {
+      const modelDataJSON = modelData.toJSON();
+      const returnModelData = excludeProperty(modelDataJSON, [
+        '__v',
+        'date',
+        'password',
+        'admin',
+      ]);
+      return returnModelData;
+    }
+  } else {
+    for (const data of inputData) {
+      const modelData = await model.findOne({ _id: data });
+      if (modelData !== null) {
+        const modelDataJSON = modelData.toJSON();
+        const returnModelData = excludeProperty(modelDataJSON, ['__v', 'date']);
+        responseData.push(returnModelData);
+      }
+    }
+    return responseData;
+  }
 }

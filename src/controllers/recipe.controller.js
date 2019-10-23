@@ -1,10 +1,12 @@
 import RecipeCategory from '../models/recipeCategory.model';
 import Recipe from '../models/recipe.model';
-// import User from '../models/user.model'
+import User from '../models/user.model';
+
 import {
   successResponse,
   excludeProperty,
   errorResponse,
+  extractModelData,
 } from '../utils/helpers';
 
 // import client from '../db/redis';
@@ -18,7 +20,9 @@ import {
 export async function createRecipe(req, res) {
   const { name, ingredients } = req.body;
   const { categoryId } = req.params;
-  const { _id } = req.user;
+  let { _id } = req.user;
+
+  _id = await extractModelData(User, _id.toString());
 
   const categoryExists = await RecipeCategory.findOne({ _id: categoryId });
   if (!categoryExists) {
@@ -61,13 +65,13 @@ export async function editRecipe(req, res) {
     return errorResponse(res, 404, 'This recipe does not exist');
   }
 
-  if (_id.toString() !== recipeExists.createdBy.toString()) {
-    return errorResponse(
-      res,
-      401,
-      'You cannot update a recipe you did not create',
-    );
-  }
+  // if (_id.toString() !== recipeExists.createdBy.toString()) {
+  //   return errorResponse(
+  //     res,
+  //     401,
+  //     'You cannot update a recipe you did not create',
+  //   );
+  // }
 
   const updatedRecipe = await Recipe.findOneAndUpdate(
     { _id: recipeId },
@@ -81,7 +85,7 @@ export async function editRecipe(req, res) {
 
   return successResponse(
     res,
-    201,
+    200,
     'Recipe has been updated',
     updatedRecipeData,
   );
@@ -107,19 +111,19 @@ export async function deleteRecipe(req, res) {
     return errorResponse(res, 404, 'This recipe does not exist');
   }
 
-  if (_id.toString() !== recipeExists.createdBy.toString()) {
-    return errorResponse(
-      res,
-      401,
-      'You cannot delete a recipe you did not create',
-    );
-  }
+  // if (_id.toString() !== recipeExists.createdBy.toString()) {
+  //   return errorResponse(
+  //     res,
+  //     401,
+  //     'You cannot delete a recipe you did not create',
+  //   );
+  // }
 
-  const deletedRecipe = await Recipe.findOneAndDelete({
+  await Recipe.findOneAndDelete({
     _id: recipeId,
   });
 
-  return successResponse(res, 201, 'Recipe has been deleted', deletedRecipe);
+  return successResponse(res, 201, 'Recipe has been deleted', null);
 }
 
 /**
@@ -141,5 +145,5 @@ export async function getRecipe(req, res) {
     return errorResponse(res, 404, 'This recipe does not exist');
   }
 
-  return successResponse(res, 201, 'Recipe', recipeExists);
+  return successResponse(res, 200, 'Recipe', recipeExists);
 }

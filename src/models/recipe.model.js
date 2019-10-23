@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 // Create Schema
 const RecipeSchema = new Schema({
   createdBy: {
-    type: Schema.Types.ObjectId,
+    type: Schema.Types.Mixed,
     ref: 'users',
   },
   category: {

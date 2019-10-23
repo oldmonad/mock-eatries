@@ -1,9 +1,9 @@
 import { Router } from 'express';
-
+import passport from 'passport';
 import authRouter from './auth.route';
 import recipeCategoryRouter from './recipeCategory.route';
 import recipeRouter from './recipe.route';
-import passport from 'passport';
+import cartRoute from './cart.route';
 require('../middlewares/passport')(passport);
 import { rateLimiter } from '../middlewares/rateLimiter';
 
@@ -23,6 +23,13 @@ router.use(
   passport.authenticate('jwt', { session: false }),
   rateLimiter,
   recipeRouter,
+);
+
+router.use(
+  '/cart',
+  passport.authenticate('jwt', { session: false }),
+  rateLimiter,
+  cartRoute,
 );
 
 export default router;
