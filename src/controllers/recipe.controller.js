@@ -10,7 +10,7 @@ import {
   extractModelData,
 } from '../utils/helpers';
 
-// import client from '../db/redis';
+import client from '../db/redis';
 
 /**
  * Create A recipe
@@ -42,6 +42,8 @@ export async function createRecipe(req, res) {
   _id = await extractModelData(User, _id.toString());
 
   const categoryExists = await RecipeCategory.findOne({ _id: categoryId });
+  console.log(categoryExists);
+
   if (!categoryExists) {
     return errorResponse(res, 404, 'This category does not exist');
   }
@@ -59,6 +61,20 @@ export async function createRecipe(req, res) {
   const recipeJSON = recipe.toJSON();
 
   const creatededRecipe = excludeProperty(recipeJSON, ['__v', 'date']);
+
+  const allRecipes = await Recipe.find({}, { __v: 0 });
+
+  client.get('recipes', (error, recipes) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
+    if (recipes) {
+      client.del('recipes');
+      client.setex('recipes', 3600, JSON.stringify(allRecipes));
+    } else {
+      client.setex('recipes', 3600, JSON.stringify(allRecipes));
+    }
+  });
   successResponse(res, 201, 'Recipe created', creatededRecipe);
 }
 
@@ -83,14 +99,6 @@ export async function editRecipe(req, res) {
     return errorResponse(res, 404, 'This recipe does not exist');
   }
 
-  // if (_id.toString() !== recipeExists.createdBy.toString()) {
-  //   return errorResponse(
-  //     res,
-  //     401,
-  //     'You cannot update a recipe you did not create',
-  //   );
-  // }
-
   const updatedRecipe = await Recipe.findOneAndUpdate(
     { _id: recipeId },
     { name, ingredients },
@@ -100,6 +108,20 @@ export async function editRecipe(req, res) {
   const updatedRecipeJSON = updatedRecipe.toJSON();
 
   const updatedRecipeData = excludeProperty(updatedRecipeJSON, ['__v', 'date']);
+
+  const allRecipes = await Recipe.find({}, { __v: 0 });
+
+  client.get('recipes', (error, recipes) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
+    if (recipes) {
+      client.del('recipes');
+      client.setex('recipes', 3600, JSON.stringify(allRecipes));
+    } else {
+      client.setex('recipes', 3600, JSON.stringify(allRecipes));
+    }
+  });
 
   return successResponse(
     res,
@@ -129,16 +151,22 @@ export async function deleteRecipe(req, res) {
     return errorResponse(res, 404, 'This recipe does not exist');
   }
 
-  // if (_id.toString() !== recipeExists.createdBy.toString()) {
-  //   return errorResponse(
-  //     res,
-  //     401,
-  //     'You cannot delete a recipe you did not create',
-  //   );
-  // }
-
   await Recipe.findOneAndDelete({
     _id: recipeId,
+  });
+
+  const allRecipes = await Recipe.find({}, { __v: 0 });
+
+  client.get('recipes', (error, recipes) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
+    if (recipes) {
+      client.del('recipes');
+      client.setex('recipes', 3600, JSON.stringify(allRecipes));
+    } else {
+      client.setex('recipes', 3600, JSON.stringify(allRecipes));
+    }
   });
 
   return successResponse(res, 201, 'Recipe has been deleted', null);
@@ -153,15 +181,69 @@ export async function deleteRecipe(req, res) {
 export async function getRecipe(req, res) {
   const { categoryId, recipeId } = req.params;
 
-  const categoryExists = await RecipeCategory.findOne({ _id: categoryId });
-  if (!categoryExists) {
-    return errorResponse(res, 404, 'This category does not exist');
-  }
+  client.get('recipes', async (error, recipes) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
 
-  const recipeExists = await Recipe.findOne({ _id: recipeId });
-  if (!recipeExists) {
-    return errorResponse(res, 404, 'This recipe does not exist');
-  }
+    if (recipes) {
+      const recipesData = JSON.parse(recipes);
 
-  return successResponse(res, 200, 'Recipe', recipeExists);
+      if (recipesData.length === 0) {
+        return errorResponse(res, 404, 'This recipe does not exist');
+      }
+
+      const foundRecipe = recipesData.find(recipe => {
+        return recipe._id === recipeId;
+      });
+
+      if (!foundRecipe) {
+        return errorResponse(res, 404, 'This recipe does not exist');
+      }
+
+      return successResponse(res, 200, 'Recipe Found', foundRecipe);
+    } else {
+      const categoryExists = await RecipeCategory.findOne({ _id: categoryId });
+      console.log(categoryExists);
+      if (!categoryExists) {
+        return errorResponse(res, 404, 'This category does not exist');
+      }
+
+      const recipeExists = await Recipe.findOne({ _id: recipeId }, { __v: 0 });
+      if (!recipeExists) {
+        return errorResponse(res, 404, 'This recipe does not exist');
+      }
+      const recipeFromDb = await Recipe.find({}, { __v: 0 });
+      client.setex('recipes', 3600, JSON.stringify(recipeFromDb));
+      return successResponse(res, 200, 'Recipe Category', recipeExists);
+    }
+  });
+}
+
+/**
+ * Create A recipe
+ * @param {object} req
+ * @param {object} res
+ * @returns {object} recipe object
+ */
+export async function getAllRecipes(req, res) {
+  client.get('recipes', async (error, recipes) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
+    if (recipes) {
+      const allRecipes = JSON.parse(recipes);
+      if (allRecipes.length === 0) {
+        return errorResponse(res, 404, 'Nothing here');
+      }
+      return successResponse(res, 200, 'All Recipes', allRecipes);
+    } else {
+      const recipeFromDb = await Recipe.find({}, { __v: 0 });
+      if (recipeFromDb.length === 0) {
+        return errorResponse(res, 404, 'Nothing here');
+      }
+      client.setex('recipes', 3600, JSON.stringify(recipeFromDb));
+      return successResponse(res, 200, 'All Recipes', recipeFromDb);
+    }
+  });
 }

@@ -6,18 +6,13 @@ dotenv.config();
 
 const client = redis.createClient(process.env.REDIS_URL);
 
-const connected = bold.cyan;
-const errorMessage = bold.yellow;
-const disconnected = bold.red;
-const termination = bold.magenta;
-
-const connected = bold.cyan;
+const conected = bold.cyan;
 const errorMessage = bold.yellow;
 const disconnected = bold.red;
 const termination = bold.magenta;
 
 client.on('connect', () => {
-  console.log(connected('Redis client connected'));
+  console.log(conected('Redis client connected'));
 });
 
 process.on('exit', function() {

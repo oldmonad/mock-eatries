@@ -152,6 +152,11 @@ export async function getRecipeCategory(req, res) {
       const foundCategory = categoriesData.find(category => {
         return category._id === categoryId;
       });
+
+      if (!foundCategory) {
+        return errorResponse(res, 404, 'This category does not exist');
+      }
+
       return successResponse(res, 200, 'Recipe Category', foundCategory);
     } else {
       const categoryExists = await RecipeCategory.findOne(
@@ -180,19 +185,23 @@ export async function getRecipeCategories(req, res) {
       return errorResponse(res, 400, 'Something went wrong');
     }
     if (recipeCategories) {
-      return successResponse(
-        res,
-        200,
-        'Recipe Categories',
-        JSON.parse(recipeCategories),
-      );
+      const allCategories = JSON.parse(recipeCategories);
+      if (allCategories.length === 0) {
+        return errorResponse(res, 404, 'Nothing here');
+      }
+      return successResponse(res, 200, 'All Recipe Categories', allCategories);
     } else {
       const categoriesFromDb = await RecipeCategory.find({}, { __v: 0 });
       if (categoriesFromDb.length === 0) {
         return errorResponse(res, 404, 'Nothing here');
       }
       client.setex('recipe-categories', 3600, JSON.stringify(categoriesFromDb));
-      return successResponse(res, 200, 'Recipe Categories');
+      return successResponse(
+        res,
+        200,
+        'All Recipe Categories',
+        categoriesFromDb,
+      );
     }
   });
 }

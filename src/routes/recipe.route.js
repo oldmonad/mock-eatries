@@ -6,6 +6,7 @@ import {
   editRecipe,
   deleteRecipe,
   getRecipe,
+  getAllRecipes,
 } from '../controllers/recipe.controller';
 import { adminAuth } from '../middlewares/auth';
 
@@ -26,5 +27,7 @@ recipeRouter.delete(
 );
 
 recipeRouter.get('/:categoryId/recipe/:recipeId', tryCatch(getRecipe));
+
+recipeRouter.get('/:categoryId/recipe', tryCatch(getAllRecipes));
 
 export default recipeRouter;
