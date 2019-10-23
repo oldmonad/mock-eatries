@@ -41,7 +41,7 @@ app.all('*', (req, res) =>
 const port = process.env.PORT || 5000;
 
 dbconnect().then(async () => {
-  await seedUsers();
+  seedUsers();
 
   if (!module.parent) {
     app.listen(port, () => {

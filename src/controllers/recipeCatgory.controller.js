@@ -1,12 +1,13 @@
 import RecipeCategory from '../models/recipeCategory.model';
+import User from '../models/user.model';
 import {
   successResponse,
   excludeProperty,
   errorResponse,
+  extractModelData,
 } from '../utils/helpers';
 
 // import client from '../db/redis';
-
 /**
  * Create A recipe category
  * @param {object} req
@@ -15,7 +16,9 @@ import {
  */
 export async function createRecipeCategory(req, res) {
   const { category, description } = req.body;
-  const { _id } = req.user;
+  let { _id } = req.user;
+
+  _id = await extractModelData(User, _id.toString());
 
   const newRecipeCategory = new RecipeCategory({
     createdBy: _id,
@@ -27,6 +30,7 @@ export async function createRecipeCategory(req, res) {
   const categoryJSON = categories.toJSON();
 
   const creatededCategories = excludeProperty(categoryJSON, ['__v', 'date']);
+
   successResponse(res, 201, 'Recipe category created', creatededCategories);
 }
 
@@ -60,7 +64,7 @@ export async function editRecipeCategory(req, res) {
 
   return successResponse(
     res,
-    201,
+    200,
     'Recipe category has been updated',
     updatedCategoryData,
   );
@@ -78,15 +82,10 @@ export async function deleteRecipeCategory(req, res) {
   if (!categoryExists) {
     return errorResponse(res, 404, 'This category does not exist');
   }
-  const deletedCategory = await RecipeCategory.findOneAndDelete({
+  await RecipeCategory.findOneAndDelete({
     _id: categoryId,
   });
-  return successResponse(
-    res,
-    201,
-    'Recipe category has been deleted',
-    deletedCategory,
-  );
+  return successResponse(res, 200, 'Recipe category has been deleted', null);
 }
 
 /**
@@ -97,9 +96,11 @@ export async function deleteRecipeCategory(req, res) {
  */
 export async function getRecipeCategory(req, res) {
   const { categoryId } = req.params;
+
   const categoryExists = await RecipeCategory.findOne({ _id: categoryId });
   if (!categoryExists) {
     return errorResponse(res, 404, 'This category does not exist');
   }
-  return successResponse(res, 201, 'Recipe Category', categoryExists);
+
+  return successResponse(res, 200, 'Recipe Category', categoryExists);
 }

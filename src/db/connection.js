@@ -46,6 +46,7 @@ const dbconnect = () =>
       useNewUrlParser: true,
       useCreateIndex: true,
       useFindAndModify: false,
+      useMongoClient: true,
     },
   );
 
