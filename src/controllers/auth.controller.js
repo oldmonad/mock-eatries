@@ -78,7 +78,7 @@ export async function login(req, res) {
   }
 
   if (!comparePassword(user.password, password)) {
-    return errorResponse(res, 401, 'The email or password is not correct');
+    return errorResponse(res, 404, 'The email or password is not correct');
   }
 
   const { _id } = user;

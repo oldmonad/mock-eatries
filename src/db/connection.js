@@ -38,15 +38,17 @@ process.on('SIGINT', () => {
   });
 });
 
+const options = {
+  useUnifiedTopology: true,
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useFindAndModify: false,
+};
+
 const dbconnect = () =>
   connect(
     MONGODB_URI,
-    {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-    },
+    options,
   );
 
 export default dbconnect;
