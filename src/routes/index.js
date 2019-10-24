@@ -4,6 +4,7 @@ import authRouter from './auth.route';
 import recipeCategoryRouter from './recipeCategory.route';
 import recipeRouter from './recipe.route';
 import cartRoute from './cart.route';
+import searchRouter from './search.route';
 require('../middlewares/passport')(passport);
 import { rateLimiter } from '../middlewares/rateLimiter';
 
@@ -31,5 +32,7 @@ router.use(
   rateLimiter,
   cartRoute,
 );
+
+router.use('/', searchRouter);
 
 export default router;

@@ -197,3 +197,13 @@ export async function extractModelData(model, inputData) {
     return responseData;
   }
 }
+
+/**
+ *
+ *
+ * @param {string} text
+ * @returns {string} Regex
+ */
+export function escapeRegex(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
