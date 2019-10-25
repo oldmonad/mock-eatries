@@ -3,9 +3,13 @@ import dotenv from 'dotenv';
 import { bold } from 'chalk';
 
 dotenv.config();
-const { REDIS_URL } = process.env;
 
-const client = redis.createClient(REDIS_URL);
+const client = redis.createClient(process.env.REDIS_URL);
+
+const connected = bold.cyan;
+const errorMessage = bold.yellow;
+const disconnected = bold.red;
+const termination = bold.magenta;
 
 const connected = bold.cyan;
 const errorMessage = bold.yellow;

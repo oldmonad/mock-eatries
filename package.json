@@ -20,7 +20,7 @@
   },
   "testEnvironment": "node",
   "scripts": {
-    "test": "export NODE_ENV=test && jest --detectOpenHandles",
+    "test": "export NODE_ENV=test && jest --detectOpenHandles --forceExit",
     "test:coverage": "export NODE_ENV=test && jest --coverage",
     "test:watch": "export NODE_ENV=test && jest --watchAll --verbose --detectOpenHandles ./src",
     "clean": "rm -rf build && mkdir build",
