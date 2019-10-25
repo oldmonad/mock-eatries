@@ -1,3 +1,4 @@
+import uuid from 'uuid';
 import RecipeCategory from '../models/recipeCategory.model';
 import Recipe from '../models/recipe.model';
 import User from '../models/user.model';
@@ -13,13 +14,29 @@ import {
 
 /**
  * Create A recipe
+ * @param {string} sentence
+ * @returns {string} Joined words
+ */
+export function joinWords(sentence) {
+  return sentence
+    .split(' ')
+    .slice(0, 2)
+    .join('-')
+    .toLowerCase();
+}
+
+/**
+ * Create A recipe
  * @param {object} req
  * @param {object} res
  * @returns {object} recipe  object
  */
 export async function createRecipe(req, res) {
-  const { name, ingredients } = req.body;
+  let { name, ingredients } = req.body;
   const { categoryId } = req.params;
+
+  const slug = `${joinWords(name)}-${uuid.v4()}`;
+
   let { _id } = req.user;
 
   _id = await extractModelData(User, _id.toString());
@@ -33,6 +50,7 @@ export async function createRecipe(req, res) {
     createdBy: _id,
     category: categoryId,
     name,
+    slug,
     ingredients,
   });
 

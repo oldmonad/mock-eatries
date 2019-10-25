@@ -7,7 +7,8 @@ import {
   extractModelData,
 } from '../utils/helpers';
 
-// import client from '../db/redis';
+import client from '../db/redis';
+
 /**
  * Create A recipe category
  * @param {object} req
@@ -30,6 +31,20 @@ export async function createRecipeCategory(req, res) {
   const categoryJSON = categories.toJSON();
 
   const creatededCategories = excludeProperty(categoryJSON, ['__v', 'date']);
+
+  const allCategories = await RecipeCategory.find({}, { __v: 0 });
+
+  client.get('recipe-categories', (error, recipeCategories) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
+    if (recipeCategories) {
+      client.del('recipe-categories');
+      client.setex('recipe-categories', 3600, JSON.stringify(allCategories));
+    } else {
+      client.setex('recipe-categories', 3600, JSON.stringify(allCategories));
+    }
+  });
 
   successResponse(res, 201, 'Recipe category created', creatededCategories);
 }
@@ -62,6 +77,20 @@ export async function editRecipeCategory(req, res) {
     'date',
   ]);
 
+  const allCategories = await RecipeCategory.find({}, { __v: 0 });
+
+  client.get('recipe-categories', (error, recipeCategories) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
+    if (recipeCategories) {
+      client.del('recipe-categories');
+      client.setex('recipe-categories', 3600, JSON.stringify(allCategories));
+    } else {
+      client.setex('recipe-categories', 3600, JSON.stringify(allCategories));
+    }
+  });
+
   return successResponse(
     res,
     200,
@@ -85,6 +114,20 @@ export async function deleteRecipeCategory(req, res) {
   await RecipeCategory.findOneAndDelete({
     _id: categoryId,
   });
+
+  const allCategories = await RecipeCategory.find({}, { __v: 0 });
+
+  client.get('recipe-categories', (error, recipeCategories) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
+    if (recipeCategories) {
+      client.del('recipe-categories');
+      client.setex('recipe-categories', 3600, JSON.stringify(allCategories));
+    } else {
+      client.setex('recipe-categories', 3600, JSON.stringify(allCategories));
+    }
+  });
   return successResponse(res, 200, 'Recipe category has been deleted', null);
 }
 
@@ -96,11 +139,60 @@ export async function deleteRecipeCategory(req, res) {
  */
 export async function getRecipeCategory(req, res) {
   const { categoryId } = req.params;
+  client.get('recipe-categories', async (error, recipeCategories) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
 
-  const categoryExists = await RecipeCategory.findOne({ _id: categoryId });
-  if (!categoryExists) {
-    return errorResponse(res, 404, 'This category does not exist');
-  }
+    if (recipeCategories) {
+      const categoriesData = JSON.parse(recipeCategories);
+      if (categoriesData.length === 0) {
+        return errorResponse(res, 404, 'This category does not exist');
+      }
+      const foundCategory = categoriesData.find(category => {
+        return category._id === categoryId;
+      });
+      return successResponse(res, 200, 'Recipe Category', foundCategory);
+    } else {
+      const categoryExists = await RecipeCategory.findOne(
+        { _id: categoryId },
+        { __v: 0 },
+      );
+      if (!categoryExists) {
+        return errorResponse(res, 404, 'This category does not exist');
+      }
+      const categoriesFromDb = await RecipeCategory.find({}, { __v: 0 });
+      client.setex('recipe-categories', 3600, JSON.stringify(categoriesFromDb));
+      return successResponse(res, 200, 'Recipe Category', categoryExists);
+    }
+  });
+}
 
-  return successResponse(res, 200, 'Recipe Category', categoryExists);
+/**
+ * Create A recipe category
+ * @param {object} req
+ * @param {object} res
+ * @returns {object} recipe category object
+ */
+export async function getRecipeCategories(req, res) {
+  client.get('recipe-categories', async (error, recipeCategories) => {
+    if (error) {
+      return errorResponse(res, 400, 'Something went wrong');
+    }
+    if (recipeCategories) {
+      return successResponse(
+        res,
+        200,
+        'Recipe Categories',
+        JSON.parse(recipeCategories),
+      );
+    } else {
+      const categoriesFromDb = await RecipeCategory.find({}, { __v: 0 });
+      if (categoriesFromDb.length === 0) {
+        return errorResponse(res, 404, 'Nothing here');
+      }
+      client.setex('recipe-categories', 3600, JSON.stringify(categoriesFromDb));
+      return successResponse(res, 200, 'Recipe Categories');
+    }
+  });
 }

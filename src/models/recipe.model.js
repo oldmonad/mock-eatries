@@ -15,6 +15,10 @@ const RecipeSchema = new Schema({
     type: String,
     required: true,
   },
+  slug: {
+    type: String,
+    required: true,
+  },
   ingredients: {
     type: Array,
     required: true,

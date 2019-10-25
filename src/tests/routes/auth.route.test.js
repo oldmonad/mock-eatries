@@ -4,7 +4,6 @@ import baseUrl from '../utils/constants';
 import { signUpMock, loginMock, invalidLoginMock } from '../mocks/mockUsers';
 
 import User from '../../models/user.model';
-import client from '../../db/redis';
 import mongoose from 'mongoose';
 
 const db = 'mongodb://127.0.0.1/mock-eatries-test';
@@ -12,6 +11,7 @@ const db = 'mongodb://127.0.0.1/mock-eatries-test';
 describe('TEST SUITE FOR USER SIGNUP', () => {
   beforeAll(async done => {
     jest.setTimeout(10000);
+
     await mongoose.connect(
       db,
       { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true },
@@ -29,7 +29,6 @@ describe('TEST SUITE FOR USER SIGNUP', () => {
   afterAll(async done => {
     await User.deleteMany({});
     await mongoose.connection.close();
-    client.unref();
     done();
   });
 
